@@ -13,7 +13,7 @@ app
         i.large.github.icon
         .content
           .header
-            {name}
+            | {name}
             .ui.green.horizontal.label {branch}
 
   script.
