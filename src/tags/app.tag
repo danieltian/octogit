@@ -20,9 +20,6 @@ app
     var RiotControl = require('riotcontrol');
     var remote = require('remote');
     var dialog = remote.require('dialog');
-    var fs = require('fs');
-    var path = require('path');
-    var Git = require('simple-git');
 
     this.searchIcon = 'search';
 
@@ -43,7 +40,7 @@ app
       this.searchIcon = text ? 'remove' : 'search';
 
       this.folders = this.allFolders.filter(folder => {
-        return folder.name.includes(this.searchFolder.value);
+        return folder.folderName.includes(this.searchFolder.value);
       });
 
       this.update();
