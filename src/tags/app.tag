@@ -26,6 +26,8 @@ app
           .header
             | {folderName}
             .ui.horizontal.label(class="{red: isDetached, yellow: !isMaster && !isDetached, green: isMaster}") {branchName}
+            a.ui.horizontal.red.label.has-popup(if="{isError}") error
+            .ui.flowing.popup(if="{isError}"): raw(content="{error}" din="dindin")
 
   script.
     var RiotControl = require('riotcontrol');
@@ -33,6 +35,10 @@ app
     var dialog = remote.require('dialog');
 
     this.searchIcon = 'search';
+
+    this.on('updated', () => {
+      $('.has-popup').popup();
+    });
 
     $(this.hideMasterCheckbox).checkbox({
       onChecked: () => {
@@ -80,7 +86,6 @@ app
     }
 
     RiotControl.on('foldersUpdated', folders => {
-      console.log('foldersUpdated');
       this.allFolders = folders;
       this.folders = folders;
       this.update();

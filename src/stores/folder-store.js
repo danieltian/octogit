@@ -27,7 +27,7 @@ function FolderStore() {
 
       var promise = Git.getBranchName(fullPath)
         .then(branchName => {
-          folderObject.branchName = branchName.stdout.replace(/\n/, '');
+          folderObject.branchName = branchName.stdout.replace(/\n/g, '');
           if (folderObject.branchName == 'master') {
             folderObject.isMaster = true;
           }
@@ -69,18 +69,19 @@ function FolderStore() {
     this.folders.forEach(folder => {
       folder.isProcessing = true;
 
-      Git.pull(folder.fullPath).then(result => {
-        folder.isProcessing = false;
-
-        if (result.stdout) {
-          console.log('pull result', result.stdout);
-        }
-        else if (result.stderr) {
-          console.error('pull result', result.stderr);
-        }
-
-        this.trigger('foldersUpdated', this.folders);
-      });
+      Git.pull(folder.fullPath)
+        .then(result => {
+          // do nothing, we pulled successfully
+        })
+        .fail(error => {
+          folder.isError = true;
+          console.log('error', error);
+          folder.error = error.stderr.replace(/(\r?\n)/g, '<br/>');
+        })
+        .finally(() => {
+          folder.isProcessing = false;
+          this.trigger('foldersUpdated', this.folders);
+        });
     });
   });
 }
