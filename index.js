@@ -3,6 +3,7 @@ var BrowserWindow = require('browser-window');  // Module to create native brows
 var WebpackDevServer = require('webpack-dev-server');
 var webpack = require('webpack');
 
+// webpack settings
 var compiler = webpack({
   target: 'atom',
   entry: __dirname + '/src/app',
@@ -28,12 +29,16 @@ var compiler = webpack({
   }
 });
 
+// webpack dev server
+// NOTE: Need to create this programmatically instead of running it on the command line, since we're in an
+// Electron app.
 var server = new WebpackDevServer(compiler, {
   contentBase: __dirname + '/dist',
   hot: true
 });
 
-server.listen(8080, 'localhost');
+// put the webpack dev server on port 7777 so that it doesn't interfere with stuff that normally goes on 8080
+server.listen(7777, 'localhost');
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function() {
