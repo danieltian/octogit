@@ -38,7 +38,13 @@ function FolderStore() {
           folderObject.isDetached = true;
         });
 
+      var promise2 = Git.getHumanRepoUrl(fullPath)
+        .then(result => {
+          folderObject.repoUrl = result;
+        });
+
       promises.push(promise);
+      promises.push(promise2);
       folders.push(folderObject);
     });
 

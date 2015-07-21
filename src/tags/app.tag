@@ -24,7 +24,7 @@ app
         i.large.github.icon
         .content
           .header
-            | {folderName}
+            a(href="{repoUrl}" onclick="{openLink}") {folderName}
             .ui.horizontal.label(class="{red: isDetached, yellow: !isMaster && !isDetached, green: isMaster}") {branchName}
             a.ui.horizontal.red.label.has-popup(if="{isError}") error
             .ui.flowing.popup(if="{isError}"): raw(content="{error}" din="dindin")
@@ -33,6 +33,7 @@ app
     var RiotControl = require('riotcontrol');
     var remote = require('remote');
     var dialog = remote.require('dialog');
+    var shell = require('shell');
 
     this.searchIcon = 'search';
 
@@ -53,6 +54,10 @@ app
         this.update();
       }
     });
+
+    openLink(event) {
+      shell.openExternal(event.item.repoUrl);
+    }
 
     showDialog() {
       dialog.showOpenDialog({ properties: ['openDirectory']}, updateFoldersList.bind(this));
