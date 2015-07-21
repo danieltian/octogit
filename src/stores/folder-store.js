@@ -25,16 +25,62 @@ function FolderStore() {
         fullPath: fullPath
       };
 
-      promises.push(Git.getBranchName(fullPath).then(branchName => {
-        folderObject.branchName = branchName.stdout.replace(/\n/, '');
-      }));
+      var promise = Git.getBranchName(fullPath)
+        .then(branchName => {
+          folderObject.branchName = branchName.stdout.replace(/\n/, '');
+          if (folderObject.branchName == 'master') {
+            folderObject.isMaster = true;
+          }
+        })
+        .fail(error => {
+          console.log('error', fullPath, error);
+          folderObject.branchName = 'detached';
+          folderObject.isDetached = true;
+        });
 
+      promises.push(promise);
       folders.push(folderObject);
     });
 
     Q.all(promises).then(() => {
       console.log('folders after processing', folders);
+      this.folders = folders;
       this.trigger('foldersUpdated', folders);
+    })
+    .fail(error => {
+      console.log('error', error);
+    });
+  });
+
+  this.on('click:checkoutAll', () => {
+    this.folders.forEach(folder => {
+      Git.checkout(folder.fullPath, 'master').then(result => {
+        if (result.stdout) {
+          console.log('checkout result', result.stdout);
+        }
+        else if (result.stderr) {
+          console.error('checkout result', result.stderr);
+        }
+      });
+    });
+  });
+
+  this.on('click:pullAll', () => {
+    this.folders.forEach(folder => {
+      folder.isProcessing = true;
+
+      Git.pull(folder.fullPath).then(result => {
+        folder.isProcessing = false;
+
+        if (result.stdout) {
+          console.log('pull result', result.stdout);
+        }
+        else if (result.stderr) {
+          console.error('pull result', result.stderr);
+        }
+
+        this.trigger('foldersUpdated', this.folders);
+      });
     });
   });
 }

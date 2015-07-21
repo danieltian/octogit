@@ -8,13 +8,24 @@ app
       input(name="searchFolder" type="text" placeholder="Search..." onkeyup="{search}")
       i.link.icon(name="searchButton" class="{searchIcon}" onclick="{searchSetup}")
 
+    .ui.button.green(onclick="{checkoutAll}") Checkout All Master
+    .ui.button.green(onclick="{pullAll}") Pull All
+
+    .ui.toggle.checkbox(name="hideMasterCheckbox")
+      input(type="checkbox" name="public")
+      label Hide repos on master branch
+
     .folders.ui.divided.items
-      .item(each="{folders}")
+      .item.ui.segment(each="{folders}")
+        //- loading mask
+        .ui.inverted.dimmer(class="{active: isProcessing}")
+          .ui.loader
+        //- item contents
         i.large.github.icon
         .content
           .header
             | {folderName}
-            .ui.green.horizontal.label {branchName}
+            .ui.horizontal.label(class="{red: isDetached, yellow: !isMaster && !isDetached, green: isMaster}") {branchName}
 
   script.
     var RiotControl = require('riotcontrol');
@@ -22,6 +33,20 @@ app
     var dialog = remote.require('dialog');
 
     this.searchIcon = 'search';
+
+    $(this.hideMasterCheckbox).checkbox({
+      onChecked: () => {
+        this.folders = this.allFolders.filter(folder => {
+          return folder.branchName != 'master'
+        });
+        this.update();
+      },
+
+      onUnchecked: () => {
+        this.folders = this.allFolders;
+        this.update();
+      }
+    });
 
     showDialog() {
       dialog.showOpenDialog({ properties: ['openDirectory']}, updateFoldersList.bind(this));
@@ -32,7 +57,7 @@ app
         this.searchFolder.value = '';
       }
 
-      search.call(this);
+      this.search.call(this);
     }
 
     search() {
@@ -46,7 +71,16 @@ app
       this.update();
     }
 
+    checkoutAll() {
+      RiotControl.trigger('click:checkoutAll');
+    }
+
+    pullAll() {
+      RiotControl.trigger('click:pullAll');
+    }
+
     RiotControl.on('foldersUpdated', folders => {
+      console.log('foldersUpdated');
       this.allFolders = folders;
       this.folders = folders;
       this.update();
@@ -63,4 +97,5 @@ app
   style(scoped).
     .ui.container {
       margin-top: 50px;
+      margin-bottom: 40px;
     }
