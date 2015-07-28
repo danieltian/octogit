@@ -37,4 +37,18 @@ GitService.prototype.getHumanRepoUrl = function(folderPath) {
     });
 };
 
+GitService.prototype.getLocalChanges = function(folderPath) {
+  return exec('git status --porcelain', { cwd: folderPath })
+    .then(result => {
+      if (result.stdout) {
+        return result.stdout.split(/\n/g).filter(item => {
+          return !!item;
+        });
+      }
+      else {
+        return [];
+      }
+    });
+};
+
 module.exports = new GitService();

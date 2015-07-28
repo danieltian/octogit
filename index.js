@@ -33,8 +33,7 @@ var compiler = webpack({
 // NOTE: Need to create this programmatically instead of running it on the command line, since we're in an
 // Electron app.
 var server = new WebpackDevServer(compiler, {
-  contentBase: __dirname + '/dist',
-  hot: true
+  contentBase: __dirname + '/dist'
 });
 
 // put the webpack dev server on port 7777 so that it doesn't interfere with stuff that normally goes on 8080
@@ -54,6 +53,7 @@ app.on('window-all-closed', function() {
 app.on('ready', function() {
   // Create the browser window.
   var mainWindow = new BrowserWindow({ width: 1024, height: 768 });
+  mainWindow.maximize();
 
   // and load the index.html of the app.
   mainWindow.loadUrl('file://' + __dirname + '/dist/index.html');

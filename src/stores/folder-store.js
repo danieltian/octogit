@@ -43,8 +43,32 @@ function FolderStore() {
           folderObject.repoUrl = result;
         });
 
+      var promise3 = Git.getLocalChanges(fullPath)
+        .then(result => {
+          folderObject.localChanges = result;
+        });
+
+      fs.watch(path.join(fullPath, '.git/HEAD'), () => {
+        console.log('HEAD changed', fullPath);
+        Git.getBranchName(fullPath)
+          .then(branchName => {
+            folderObject.branchName = branchName.stdout.replace(/\n/g, '');
+            if (folderObject.branchName == 'master') {
+              folderObject.isMaster = true;
+            }
+          })
+          .fail(error => {
+            console.log('error', fullPath, error);
+            folderObject.branchName = 'detached';
+            folderObject.isDetached = true;
+          });
+
+        this.trigger('foldersUpdated', this.folders);
+      });
+
       promises.push(promise);
       promises.push(promise2);
+      promises.push(promise3);
       folders.push(folderObject);
     });
 

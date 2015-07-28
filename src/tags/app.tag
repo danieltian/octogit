@@ -10,6 +10,7 @@ app
 
     .ui.button.green(onclick="{checkoutAll}") Checkout All Master
     .ui.button.green(onclick="{pullAll}") Pull All
+    .ui.button.blue(onclick="{refresh}") Refresh
 
     .ui.toggle.checkbox(name="hideMasterCheckbox")
       input(type="checkbox" name="public")
@@ -25,9 +26,11 @@ app
         .content
           .header
             a(href="{repoUrl}" onclick="{openLink}") {folderName}
-            .ui.horizontal.label(class="{red: isDetached, yellow: !isMaster && !isDetached, green: isMaster}") {branchName}
+            .ui.horizontal.label(class="{red: isDetached, orange: !isMaster && !isDetached, green: isMaster}") {branchName}
             a.ui.horizontal.red.label.has-popup(if="{isError}") error
-            .ui.flowing.popup(if="{isError}"): raw(content="{error}" din="dindin")
+            .ui.flowing.popup(if="{isError}"): raw(content="{error}")
+            a.ui.horizontal.blue.label.has-popup(if="{localChanges.length}") uncommitted changes
+            .ui.flowing.popup(if="{localChanges.length}"): raw(content="{localChanges}")
 
   script.
     var RiotControl = require('riotcontrol');
@@ -61,6 +64,10 @@ app
 
     showDialog() {
       dialog.showOpenDialog({ properties: ['openDirectory']}, updateFoldersList.bind(this));
+    }
+
+    refresh() {
+      updateFoldersList.call(this, this.selectedFolder.value);
     }
 
     searchSetup() {
@@ -97,8 +104,8 @@ app
     });
 
     function updateFoldersList(selectedFolders) {
-      var rootFolder = selectedFolders[0];
-      this.rootFolder = rootFolder
+      var rootFolder = Array.isArray(selectedFolders) ? selectedFolders[0] : selectedFolders;
+      this.rootFolder = rootFolder;
       this.selectedFolder.value = rootFolder;
 
       RiotControl.trigger('rootFolderSelected', rootFolder);
