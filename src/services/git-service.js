@@ -1,54 +1,55 @@
 var riot = require('riot');
 var exec = require('child-process-promise').exec;
 
-function GitService() {
-  riot.observable(this);
-}
+class GitService {
+  // get the current branch name from the symbolic-ref
+  getBranchName(folderPath) {
+    return this._runShellCommand('git symbolic-ref --short HEAD', folderPath);
+  }
 
-GitService.prototype.getBranchName = function(folderPath) {
-  return exec('git symbolic-ref --short HEAD', { cwd: folderPath });
-};
+  checkout(branchName, folderPath) {
+    return this._runShellCommand(`git checkout ${branchName}`, folderPath);
+  }
 
-GitService.prototype.checkout = function(folderPath, branchName) {
-  return exec('git checkout ' + branchName, { cwd: folderPath });
-};
+  pull(folderPath) {
+    return this._runShellCommand('git pull', folderPath);
+  }
 
-GitService.prototype.pull = function(folderPath) {
-  return exec('git pull', { cwd: folderPath });
-};
+  // get the URL of the repo that you would enter into a browser
+  getHtmlUrl(folderPath) {
+    return this._runShellCommand('git config --get remote.origin.url', folderPath)
+      .then(result => {
+        var originUrl = result.stdout;
 
-// get the URL of the repo that you would enter into a browser
-GitService.prototype.getHumanRepoUrl = function(folderPath) {
-  return exec('git config --get remote.origin.url', { cwd: folderPath })
-    .then(result => {
-      var originUrl = result.stdout;
-
-      // convert a SSH URL to the human HTTPS URL: git@github.com:danieltian/octogit.git
-      if (originUrl.includes('git@')) {
-        originUrl = originUrl.replace(':', '/');
+        originUrl = originUrl.replace(':', '/')
         originUrl = originUrl.replace('git@', 'https://');
-      }
+        originUrl = originUrl.replace('.git', '');
 
-      // remove the '.git' at the end and any newline characters
-      originUrl = originUrl.replace('.git', '');
-      originUrl = originUrl.replace(/(\r?\n)/g, '');
+        return _removeLineEndings(string);
+      })
+  }
 
-      return originUrl;
-    });
-};
+  getUncommittedChanges(folderPath) {
+    return this._runShellCommand('git status --porcelain', folderPath)
+      .then(result => {
+        if (result.stdout) {
+          return result.stdout.split(/\n/g).filter(item => {
+            return !!item;
+          });
+        }
+        else {
+          return [];
+        }
+      });
+  }
 
-GitService.prototype.getLocalChanges = function(folderPath) {
-  return exec('git status --porcelain', { cwd: folderPath })
-    .then(result => {
-      if (result.stdout) {
-        return result.stdout.split(/\n/g).filter(item => {
-          return !!item;
-        });
-      }
-      else {
-        return [];
-      }
-    });
-};
+  _runShellCommand(command, currentWorkingDirectory) {
+    return exec(command, { cwd: currentWorkingDirectory });
+  }
+
+  _removeLineEndings(string) {
+    return string.replace(/(\r?\n)/g, '');
+  }
+}
 
 module.exports = new GitService();

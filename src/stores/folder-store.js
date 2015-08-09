@@ -8,8 +8,6 @@ function FolderStore() {
   riot.observable(this);
 
   this.on('rootFolderSelected', (rootFolder) => {
-    console.log('rootFolderSelected', rootFolder);
-
     var subfolders = fs.readdirSync(rootFolder).filter(file => {
       return fs.statSync(path.join(rootFolder, file)).isDirectory();
     });
