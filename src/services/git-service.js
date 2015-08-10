@@ -4,7 +4,15 @@ var exec = require('child-process-promise').exec;
 class GitService {
   // get the current branch name from the symbolic-ref
   getBranchName(folderPath) {
-    return this._runShellCommand('git symbolic-ref --short HEAD', folderPath);
+    return this
+      ._runShellCommand('git symbolic-ref --short HEAD', folderPath)
+      .then(branchName => {
+        return this._removeLineEndings(branchName);
+      })
+      .fail(error => {
+        console.log('GitService.getBranchName() error', error);
+        return null;
+      });
   }
 
   checkout(branchName, folderPath) {
@@ -25,7 +33,7 @@ class GitService {
         originUrl = originUrl.replace('git@', 'https://');
         originUrl = originUrl.replace('.git', '');
 
-        return _removeLineEndings(string);
+        return this._removeLineEndings(string);
       })
   }
 
